@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AneJewels</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+  
+    <style>
+
+        .product-image {
+            max-height: 500px;
+            width: auto; }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+                
+                th, td {
+                    padding: 8px;
+                    text-align: left;
+                    border-bottom: 1px solid #ddd;
+                }
+                
+                img {
+                    max-width: 50px;
+                    max-height: 50px;
+                }
+                
+                .product-details {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                }
+                
+                .product-details p {
+                    margin: 0;
+                }
+                
+                    .cart-container {
+                      background: #131415;
+                      padding: 120px;
+                    }
+                  
+                    .bordered-table {
+                      width: 100%;
+                      border-collapse: collapse;
+                      table-layout: fixed;
+                    }
+                  
+                
+                    .bordered-table td {
+                      padding: 10px;
+                      border: 1px solid #fff;
+                      color: #fff;
+                    }
+                  
+              
+                    .bordered-table th {
+                      padding: 10px;
+                      border: 1px solid #fff;
+                      color: #fff;
+                      background: #000;
+                      
+                    }
+                  
+                    .bordered-table input[type="number"] {
+                      width: 50px;
+                    }
+                  
+                    .total {
+                      text-align: right;
+                      margin-top: 20px;
+                      color: #fff;
+                    }
+                  
+                    .remove-link {
+                      color: #fff;
+                      text-decoration: none;
+                    }
+           
+                  
+                
+            </style>
+            
+        </head> <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a style="font-size: 23px" class="navbar-brand" href="{% url 'home' %} ">AneJewels</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mx-auto" style="font-size: 20px">
+                  {% comment %} {{ categories }} {% endcomment %}
+                    {% for category in categories %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/categories/{{ category.id }}/products/">{{ category.name }}</a>
+                    </li>
+                    {% endfor %}
+                    <li> <a class="nav-link" href="{% url 'cart' %}">CART</a> </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div style="background:#131415; padding:120px">
+        <div class="back">
+            {% if cart_items %}
+                <a style="font-size: 23px; text-decoration: none; color:white; position:relative;left: 85%; bottom: -5px;" href="{% url 'product_detail' product_id=cart_items.0.product.id %}"> < BACK  </a>
+            {% else %}
+                <a style="font-size: 23px; text-decoration: none; color:white; position:relative;left: 85%; bottom: -5px;" href="{% url 'home' %}"> < BACK  </a>
+            {% endif %}
+        </div>
+        
+        {% if cart_items %}
+            <table class="bordered-table">
+                <tr>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Total</th>
+                    <th>Remove</th>
+                </tr>
+                {% for item in cart_items %}
+                    <tr>
+                        <td class="text-center">
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" width="50" height="50">
+                        </td>
+                        <td>{{ item.product.name }}</td>
+                        <td>${{ item.product.price }}</td>
+                        <td>
+                            <input type="number" name="quantity" min="1" value="{{ item.quantity }}" data-product-id="{{ item.product.id }}">
+                        </td>
+                        <td>${{ item.subtotal }}</td>
+                        <td>
+                            <a href="{% url 'remove_from_cart' item.product.id %}">Remove</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="4"></td>
+                    <td class="total">Total: ${{ total }}</td>
+                    <td></td>
+                </tr>
+            </table>
+
+            
+            <form id="shipping-form" method="POST" action="{% url 'paypal' %}" style="color: white;" class="mt-5">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                  <label for="name" class="form-label">Name:</label>
+                  <input type="text" id="name" name="name" class="form-control" required>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="address" class="form-label">Address:</label>
+                  <input type="text" id="address" name="address" class="form-control" required>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="email" class="form-label">Email:</label>
+                  <input type="email" id="email" name="email" class="form-control" required>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="phone" class="form-label">Phone:</label>
+                  <input type="tel" id="phone" name="phone" class="form-control" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Next</button>
+                <p style="color: white">After submiting this for you will be poroceded to payment form <p/>
+              </form>
+              
+
+        {% else %}
+            <p style="color: white">There are no products in the cart.</p>
+        {% endif %}
+    </div>
+       <footer style="background: #f8f9fa;">
+
+        <p style="padding: 14px;
+        text-align: center;margin: 0;"> &copy;2023 ANEJWELLS | Anesa Hajdari </p>
+        
+        </footer>
+</body>
+</html>
